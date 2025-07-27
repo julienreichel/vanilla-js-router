@@ -6,18 +6,20 @@ const html = `
   <pre id="keyOutput"></pre>
 `;
 
-const onLoad = () => {
-  const output = document.getElementById('keyOutput');
-  keyHandler = (e) => {
+let output = null;
+keyHandler = (e) => {
+  if (output) {
     output.textContent = `Key: ${e.key}, Code: ${e.code}`;
-  };  
+  }
+};
+
+const onLoad = () => {
+  output = document.getElementById('keyOutput');
   window.addEventListener('keydown', keyHandler);
 }
 
 const cleanup = () => {
-  if (keyHandler) {
-    window.removeEventListener('keydown', keyHandler);
-  }
+  window.removeEventListener('keydown', keyHandler);
 }
 
 export default { html, onLoad, cleanup };  
