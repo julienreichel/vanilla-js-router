@@ -28,13 +28,13 @@ export function router(app, path, modules) {
   }
 }
 
-if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-  function handleRoute() {
-    const app = document.getElementById('app');
-    const path = location.hash.slice(1) || '/';
-    router(app, path, modules);
-  }
+export function handleRoute() {
+  const app = document.getElementById('app');
+  const path = location.hash.slice(1) || '/';
+  router(app, path, modules);
+}
 
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   window.addEventListener('load', handleRoute);
   window.addEventListener('hashchange', handleRoute);
 }

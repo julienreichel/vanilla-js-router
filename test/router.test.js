@@ -1,6 +1,6 @@
 
 import { describe, it, beforeEach, afterEach, vi, expect } from 'vitest';
-import { router } from '../src/router.js';
+import { router, handleRoute } from '../src/router.js';
 
 
 let app;
@@ -32,7 +32,7 @@ describe('router', () => {
 
   it('renders home page', () => {
     router(app, '/', modules);
-    
+
     expect(app.innerHTML).toBe(home.html);
     expect(home.onLoad).toHaveBeenCalled();
   });
@@ -75,5 +75,39 @@ describe('router', () => {
     expect(() => router(app, '/noonload', modules)).not.toThrow();
 
     expect(app.innerHTML).toBe(noOnLoadPage.html);
+  });
+});
+
+describe('handleRoute', () => {
+  let originalGetElementById;
+  let originalLocation;
+  let appObj;
+
+  beforeEach(() => {
+    // Save originals
+    originalGetElementById = global.document.getElementById;
+    originalLocation = global.window.location;
+
+    // Mock getElementById to return appObj
+    appObj = { innerHTML: '' };
+    global.document.getElementById = vi.fn(() => appObj);
+
+    // Mock location
+    delete global.window.location;
+    global.window.location = { hash: '' };
+  });
+
+  afterEach(() => {
+    // Restore originals
+    global.document.getElementById = originalGetElementById;
+    global.window.location = originalLocation;
+  });
+
+  it('updates the app innerHTML for root hash', () => {
+    window.location.hash = '';
+    handleRoute();
+    expect(global.document.getElementById).toHaveBeenCalledWith('app');
+    // Side effect testing: appObj should have been updated
+    expect(appObj.innerHTML).toMatch(/<h1/i);
   });
 });
