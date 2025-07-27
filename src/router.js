@@ -2,9 +2,6 @@ import homeModule from './routes/home.js';
 import keyboardModule from './routes/keyboard.js';
 import notFoundModule from './routes/notfound.js';
 
-
-const app = document.getElementById('app');
-
 const modules = {
   '/': homeModule,
   '/keyboard': keyboardModule,
@@ -12,26 +9,32 @@ const modules = {
 };
 let currentModule = null;
 
-const renderPage = (html) => {
+const renderPage = (app, html) => {
   app.innerHTML = html;
 }
 
-const router = async () => {
-  const path = location.hash.slice(1) || '/';
 
+export function router(app, path, modules) {
   if (typeof currentModule?.cleanup === 'function') {
     currentModule.cleanup();
   }
 
   currentModule = modules[path] || modules['404'];
   
-  renderPage(currentModule.html);
-
+  renderPage(app, currentModule.html);
+  
   if (typeof currentModule.onLoad === 'function') {
     currentModule.onLoad();
   }
 }
 
-// Navigation events
-window.addEventListener('load', router);
-window.addEventListener('hashchange', router);
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  function handleRoute() {
+    const app = document.getElementById('app');
+    const path = location.hash.slice(1) || '/';
+    router(app, path, modules);
+  }
+
+  window.addEventListener('load', handleRoute);
+  window.addEventListener('hashchange', handleRoute);
+}
