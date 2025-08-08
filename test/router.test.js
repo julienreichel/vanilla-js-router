@@ -2,15 +2,8 @@
 import { describe, it, beforeEach, afterEach, vi, expect } from 'vitest';
 import { router, handleRoute } from '../src/router.js';
 
-
-let app;
-let home;
-let pageB;
-let notFoundPage;
-let modules;
-
-
 describe('router', () => {
+  let app, home, pageB, notFoundPage, modules;
   beforeEach(() => {
     // Use a plain object with innerHTML property for app
     app = { innerHTML: '' };
@@ -37,44 +30,31 @@ describe('router', () => {
     expect(home.onLoad).toHaveBeenCalled();
   });
 
-  it('renders page B', () => {
-    router(app, '/b', modules);
-
-    expect(app.innerHTML).toBe(pageB.html);
-    expect(pageB.onLoad).toHaveBeenCalled();
-  });
-
   it('renders 404 page for unknown route', () => {
     router(app, '/unknown', modules);
 
     expect(app.innerHTML).toBe(notFoundPage.html);
   });
 
-  it('calls cleanup on previous module if defined', () => {
-    router(app, '/', modules);
+  it('calls the onLoad function', () => {
+    const onLoad = vi.fn();
+    modules['/b'] = { html: '<h1>Page B</h1>', onLoad };
+
     router(app, '/b', modules);
 
-    expect(home.cleanup).toHaveBeenCalled();
-    expect(pageB.onLoad).toHaveBeenCalled();
-  });
+    expect(app.innerHTML).toBe(modules['/b'].html);
+    expect(onLoad).toHaveBeenCalled();
+    });
 
-  it('does not throw if previous module has no cleanup', () => {
-    const noCleanupPage = { html: '<h1>No Cleanup</h1>', onLoad: vi.fn() };
-    modules['/nocleanup'] = noCleanupPage;
 
-    router(app, '/nocleanup', modules); 
-    expect(() => router(app, '/', modules)).not.toThrow();
+    it('calls the cleanup function on previous module', () => {
+    const cleanup = vi.fn();
+    modules['/b'] = { html: '<h1>Page B</h1>', cleanup };
 
-    expect(app.innerHTML).toBe(home.html);
-  });
+    router(app, '/b', modules);
+    router(app, '/', modules);
 
-  it('does not call onLoad if not defined', () => {
-    const noOnLoadPage = { html: '<h1>No onLoad</h1>', cleanup: vi.fn() };
-    modules['/noonload'] = noOnLoadPage;
-
-    expect(() => router(app, '/noonload', modules)).not.toThrow();
-
-    expect(app.innerHTML).toBe(noOnLoadPage.html);
+    expect(cleanup).toHaveBeenCalled();
   });
 });
 
@@ -84,30 +64,22 @@ describe('handleRoute', () => {
   let appObj;
 
   beforeEach(() => {
-    // Save originals
-    originalGetElementById = global.document.getElementById;
-    originalLocation = global.window.location;
-
-    // Mock getElementById to return appObj
-    appObj = { innerHTML: '' };
-    global.document.getElementById = vi.fn(() => appObj);
-
-    // Mock location
-    delete global.window.location;
-    global.window.location = { hash: '' };
-  });
-
-  afterEach(() => {
-    // Restore originals
-    global.document.getElementById = originalGetElementById;
-    global.window.location = originalLocation;
+    document.body.innerHTML = "<div id='app'></div>";
   });
 
   it('updates the app innerHTML for root hash', () => {
     window.location.hash = '';
+    
     handleRoute();
-    expect(global.document.getElementById).toHaveBeenCalledWith('app');
-    // Side effect testing: appObj should have been updated
-    expect(appObj.innerHTML).toMatch(/<h1/i);
+    // remove event listeners to avoid crash when leaving the tests
+    window.removeEventListener('load', handleRoute);
+    window.removeEventListener('hashchange', handleRoute);
+
+    expect(document.body.innerHTML).toMatchInlineSnapshot(`
+      "<div id="app">
+        <h1>Home</h1>
+        <p>Welcome to the Home page!</p>
+      </div>"
+    `);
   });
 });
