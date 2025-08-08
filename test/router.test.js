@@ -59,9 +59,6 @@ describe('router', () => {
 });
 
 describe('handleRoute', () => {
-  let originalGetElementById;
-  let originalLocation;
-  let appObj;
 
   beforeEach(() => {
     document.body.innerHTML = "<div id='app'></div>";
