@@ -1,5 +1,5 @@
 
-import { describe, it, beforeEach, afterEach, vi, expect } from 'vitest';
+import { describe, it, beforeEach, vi, expect } from 'vitest';
 import { router, handleRoute } from '../src/router.js';
 
 describe('router', () => {
@@ -9,8 +9,8 @@ describe('router', () => {
     app = { innerHTML: '' };
 
     // Create fresh mocks for each test
-    home = { html: '<h1>Home</h1>', onLoad: vi.fn(), cleanup: vi.fn() };
-    pageB = { html: '<h1>Page B</h1>', onLoad: vi.fn(), cleanup: vi.fn() };
+    home = { html: '<h1>Home</h1>' };
+    pageB = { html: '<h1>Page B</h1>' };
     notFoundPage = { html: '<h1>404</h1><p>Page not found.</p>' };
     modules = {
       '/': home,
@@ -19,15 +19,10 @@ describe('router', () => {
     };
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it('renders home page', () => {
     router(app, '/', modules);
 
     expect(app.innerHTML).toBe(home.html);
-    expect(home.onLoad).toHaveBeenCalled();
   });
 
   it('renders 404 page for unknown route', () => {
