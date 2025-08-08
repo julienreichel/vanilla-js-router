@@ -31,8 +31,7 @@ export function router(app, path, modules) {
 export function handleRoute() {
   const app = document.getElementById('app');
   const path = location.hash.slice(1) || '/';
-  console.log(`Navigating to: ${path}`);
-  console.log(`app:`, app);
+
   router(app, path, modules);
 }
 
